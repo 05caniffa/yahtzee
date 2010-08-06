@@ -100,7 +100,7 @@ class GameVars{
     $this->score_items["lgstraight"]=new ScoreItem($static,$check_straight,"lgstraight",10,"Large Straight",5,"bottom",40);
     $this->score_items["chance"]=new ScoreItem($addall,$verify_true,"chance",11,"Chance",1,"bottom");
     $this->score_items["yahtzee"]=new ScoreItem($static,$check_same,"yahtzee",12,"Yahtzee",5,"bottom",50);
-
+    $this->score_items["yahtzeebonus"]=new ScoreItem($static,$check_same,"yahtzeebonus",13,"Yahtzee Bonus",5,"bottom",100);
   }
   function get_score_items(){
     return $this->score_items;
@@ -126,15 +126,20 @@ class ScoreItem{
   }
   function get_score($array){
     $self=$this;
-    if(call_user_func($this->verify_function,$self,$array))
+    if($this->verify($array))
       return call_user_func($this->score_function,$self,$array);
     else
       return 0;
   }
+  function verify($array){
+    $self=$this;
+    return call_user_func($this->verify_function,$self,$array);
+  }
 }
 
 function score_sheet(){
-  global $gv;
+  global $gv,$first_check;
+  $first_check=true;
   $top=array();
   $bottom=array();
   foreach($gv->get_score_items() as $key=>$obj){
@@ -155,31 +160,27 @@ function score_sheet(){
 }
 
 function score_section($list){
+  global $gv,$dice,$first_check;
   $total=0;
   foreach($list as $obj){
+    $checked="";
     $enabled=($_SESSION['turn_num']==3&&(!is_numeric($_SESSION[$obj->id]))?"":"disabled");
-    printf("<tr><td>%s</td><td>%s</td><td><input type=\"radio\" name=\"selection\" value=\"%s\" %s></td></tr>",$obj->text,$_SESSION[$obj->id],$obj->id,$enabled);
+    if($obj->id=="yahtzeebonus"){
+      $si_arr=$gv->get_score_items();
+      $si=$si_arr["yahtzee"];
+      if(!$si->verify($dice))
+	$enabled="disabled";
+    }
+    if($first_check&&$enabled==""){
+      $checked="checked";
+      $first_check=false;
+    }
+    printf("<tr><td>%s</td><td>%s</td><td><input type=\"radio\" name=\"selection\" value=\"%s\" %s %s></td></tr>",$obj->text,$_SESSION[$obj->id],$obj->id,$checked,$enabled);
     if(is_numeric($_SESSION[$obj->id])){
       $total+=$_SESSION[$obj->id];
     }
   }
   return $total;
-}
-
-function init(){
-  global $gv;
-  $spaces="&nbsp;";
-  $i=0;
-  while($i<10){
-    $spaces.="&nbsp;";
-    $i=$i+1;
-  }
-  if(!isset($_SESSION['started'])){
-    foreach(array_keys($gv->get_score_items()) as $key){
-      $_SESSION[$key]=$spaces;
-    }
-    $_SESSION['started']=true;
-  }
 }
 
 function show_dice(){
@@ -246,15 +247,14 @@ function calc_score($selection){
   $_SESSION[$selection]=$si->get_score($dice);
 }
 
-
-$gv=new GameVars();
-$dice=array(0,0,0,0,0);
-init();
 session_start();
+
 if(!isset($_SESSION['key'])){
   header("Location: index.php");
 }
 else{
+  $gv=new GameVars();
+  $dice=array(0,0,0,0,0);
   if($_SERVER['REQUEST_METHOD']=="POST"){
     if(array_key_exists('_logout',$_POST)){
       session_destroy();
