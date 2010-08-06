@@ -131,8 +131,8 @@ function score_section($list){
   foreach($list as $obj){
     $enabled=($_SESSION['turn_num']==3&&(!is_numeric($_SESSION[$obj->id]))?"":"disabled");
     printf("<tr><td>%s</td><td>%s</td><td><input type=\"radio\" name=\"selection\" value=\"%s\" %s></td></tr>",$obj->text,$_SESSION[$obj->id],$obj->id,$enabled);
-    if(is_numeric($scores[$obj->id])){
-      $total+=$scores[$obj->id];
+    if(is_numeric($_SESSION[$obj->id])){
+      $total+=$_SESSION[$obj->id];
     }
   }
   return $total;
