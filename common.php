@@ -1,5 +1,7 @@
-/*
- Copyright (c) 2010 Andrew Caniff <andrew.caniff@gmail.com>
+<?php
+
+/* 
+Copyright (c) 2010 Andrew Caniff <andrew.caniff@gmail.com>
 
  Permission is hereby granted, free of charge, to any person obtaining a copy
  of this software and associated documentation files (the "Software"), to deal
@@ -20,8 +22,6 @@
  THE SOFTWARE.
 
 */
-
-<?php
 
 ini_set('display_errors', 1);
 ini_set('log_errors', 1);

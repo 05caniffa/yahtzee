@@ -1,3 +1,4 @@
+<?php
 /*
  Copyright (c) 2010 Andrew Caniff <andrew.caniff@gmail.com>
 
@@ -20,9 +21,6 @@
  THE SOFTWARE.
 
 */
-
-
-<?php
 
 require_once("common.php");
 
