@@ -156,6 +156,9 @@ function score_sheet(){
   $top_total=$top_subtotal+$bonus;
   printf("<tr><td><b>Top total</b></td><td>%d</td></tr>",$top_total);
   $bottom_total=score_section($bottom);
+  printf("<tr><td><b>Bottom total</b></td><td>%d</td></tr>",$bottom_total);
+  $total=$top_total+$bottom_total;
+  printf("<tr><td><b>Total</b></td><td>%d</td></tr>",$total);
   printf("</table>\n");
 }
 
@@ -166,10 +169,19 @@ function score_section($list){
     $checked="";
     $enabled=($_SESSION['turn_num']==3&&(!is_numeric($_SESSION[$obj->id]))?"":"disabled");
     if($obj->id=="yahtzeebonus"){
-      $si_arr=$gv->get_score_items();
-      $si=$si_arr["yahtzee"];
-      if(!$si->verify($dice))
+      $enabled="disabled";
+      if($_SESSION['turn_num']==3){
+	$enabled="";
+      }
+      if(!is_numeric($_SESSION['yahtzee'])){
 	$enabled="disabled";
+      }
+      else{
+	$si_arr=$gv->get_score_items();
+	$si=$si_arr["yahtzee"];
+	if(!$si->verify($dice))
+	  $enabled="disabled";
+      }
     }
     if($first_check&&$enabled==""){
       $checked="checked";
@@ -205,6 +217,7 @@ function roll(){
     else{
       //(re)roll that die
       $dice[$i]=rand(1,6);
+      $dice[$i]=5;
     }
   }
 }
@@ -219,7 +232,8 @@ function play_surface(){
 
 function roll_form(){
   if($_SESSION['turn_num']>0){
-    roll();
+    if($_SESSION['turn_num']<=3)
+      roll();
     show_dice();
   }
   if($_SESSION['turn_num']<3){
@@ -242,9 +256,15 @@ function full_page(){
 
 function calc_score($selection){
   global $gv,$dice;
-  $si_arr=$gv->get_score_items();
-  $si=$si_arr[$selection];
-  $_SESSION[$selection]=$si->get_score($dice);
+  if($_SESSION['_valid']){
+    $si_arr=$gv->get_score_items();
+    $si=$si_arr[$selection];
+    $old_score=0;
+    if($selection=="yahtzeebonus"&&is_numeric($_SESSION['yahtzeebonus']))
+      $old_score=$_SESSION['yahtzeebonus'];
+    $_SESSION[$selection]=$si->get_score($dice)+$old_score;
+    $_SESSION["_valid"]=false;
+  }
 }
 
 session_start();
@@ -265,12 +285,15 @@ else{
 	$dice[$i]=$_POST["d".$i."_val"];
       }
       if(array_key_exists('_roll',$_POST)){
+	$_SESSION['_valid']=true;
 	$_SESSION['turn_num']=$_SESSION['turn_num']+1;
 	printf("turn number = %d",$_SESSION['turn_num']);
       }
       else{ //make selection
-	$_SESSION['turn_num']=0;
-	calc_score($_POST['selection']);
+	if(array_key_exists('selection',$_POST)){
+	  $_SESSION['turn_num']=0;
+	  calc_score($_POST['selection']);
+	}
       }
       full_page();
     }
