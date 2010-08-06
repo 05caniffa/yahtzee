@@ -217,7 +217,6 @@ function roll(){
     else{
       //(re)roll that die
       $dice[$i]=rand(1,6);
-      $dice[$i]=5;
     }
   }
 }
@@ -226,7 +225,12 @@ function play_surface(){
   $is_turn=true;
   printf("<form action=\"%s\" method=\"POST\">\n",$_SERVER['PHP_SELF']);
   score_sheet();
-  roll_form();
+  if($_SESSION['rounds']<13){
+    roll_form();
+  }
+  else{
+    printf("game over");
+  }
   printf("</form>\n");
 }
 
@@ -256,15 +260,12 @@ function full_page(){
 
 function calc_score($selection){
   global $gv,$dice;
-  if($_SESSION['_valid']){
-    $si_arr=$gv->get_score_items();
-    $si=$si_arr[$selection];
-    $old_score=0;
-    if($selection=="yahtzeebonus"&&is_numeric($_SESSION['yahtzeebonus']))
-      $old_score=$_SESSION['yahtzeebonus'];
-    $_SESSION[$selection]=$si->get_score($dice)+$old_score;
-    $_SESSION["_valid"]=false;
-  }
+  $si_arr=$gv->get_score_items();
+  $si=$si_arr[$selection];
+  $old_score=0;
+  if($selection=="yahtzeebonus"&&is_numeric($_SESSION['yahtzeebonus']))
+    $old_score=$_SESSION['yahtzeebonus'];
+  $_SESSION[$selection]=$si->get_score($dice)+$old_score;
 }
 
 session_start();
@@ -290,9 +291,12 @@ else{
 	printf("turn number = %d",$_SESSION['turn_num']);
       }
       else{ //make selection
-	if(array_key_exists('selection',$_POST)){
+	if($_SESSION['_valid']){
 	  $_SESSION['turn_num']=0;
 	  calc_score($_POST['selection']);
+	  $_SESSION["_valid"]=false;
+	  $_SESSION['rounds']=array_key_exists('rounds',$_SESSION)?$_SESSION['rounds']+1:1;
+	  printf("rounds completed: %d",$_SESSION['rounds']);
 	}
       }
       full_page();
