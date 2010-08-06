@@ -229,7 +229,8 @@ function play_surface(){
     roll_form();
   }
   else{
-    printf("game over");
+    printf("<input type=\"submit\" value=\"New Game?\">\n");
+    printf("<input type=\"hidden\" name=\"_newgame\" value=\"true\">\n");
   }
   printf("</form>\n");
 }
@@ -290,14 +291,21 @@ else{
 	$_SESSION['turn_num']=$_SESSION['turn_num']+1;
 	printf("turn number = %d",$_SESSION['turn_num']);
       }
-      else{ //make selection
+      else if(array_key_exists('_select',$_POST)){ //make selection
 	if($_SESSION['_valid']){
 	  $_SESSION['turn_num']=0;
 	  calc_score($_POST['selection']);
 	  $_SESSION["_valid"]=false;
-	  $_SESSION['rounds']=array_key_exists('rounds',$_SESSION)?$_SESSION['rounds']+1:1;
+	  $_SESSION['rounds']=array_key_exists('rounds',$_SESSION)?$_SESSION['rounds']+1:12;
 	  printf("rounds completed: %d",$_SESSION['rounds']);
 	}
+      }
+      else{//new game
+	$key=$_SESSION['key'];
+	foreach(array_keys($_SESSION) as $key){
+	  unset($_SESSION[$key]);
+	}
+	$_SESSION['key']=$key;
       }
       full_page();
     }
