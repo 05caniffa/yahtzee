@@ -35,12 +35,14 @@ class GameVars{
     };
 
     $check_straight=function($self,$array){
+      $array=array_values(array_unique($array));
       sort($array);
       $chain=0;
       $max_chain=0;
-      for($i=1;$i<5;$i++){
-	if($array[$i-1]+1==$array[$i])
+      for($i=1;$i<count($array);$i++){
+	if($array[$i-1]+1==$array[$i]){
 	  $chain=$chain==0?2:$chain+1;
+	}
 	else
 	  $chain=0;
 	$max_chain=max($max_chain,$chain);
@@ -120,7 +122,11 @@ function score_sheet(){
       array_push($bottom,$obj);
   }
   printf("<table class=\"scoresheet\">\n");
-  $top_total=score_section($top);
+  $top_subtotal=score_section($top);
+  printf("<tr><td><b>Top subtotal</b></td><td>%d</td></tr>",$top_subtotal);
+  $bonus=$top_subtotal>=63?35:0;
+  printf("<tr><td>If subtotal is 63 or higher, add 35</td><td>%d</td></tr>",$bonus);
+  $top_total=$top_subtotal+$bonus;
   printf("<tr><td><b>Top total</b></td><td>%d</td></tr>",$top_total);
   $bottom_total=score_section($bottom);
   printf("</table>\n");
