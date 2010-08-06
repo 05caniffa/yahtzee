@@ -170,7 +170,8 @@ function score_section($list){
     $enabled=($_SESSION['turn_num']==3&&(!is_numeric($_SESSION[$obj->id]))?"":"disabled");
     if($obj->id=="yahtzeebonus"){
       $enabled="disabled";
-      if($_SESSION['turn_num']==3){
+    }
+    if($_SESSION['turn_num']==3){
 	$enabled="";
       }
       if(!is_numeric($_SESSION['yahtzee'])){
@@ -296,7 +297,7 @@ else{
 	  $_SESSION['turn_num']=0;
 	  calc_score($_POST['selection']);
 	  $_SESSION["_valid"]=false;
-	  $_SESSION['rounds']=array_key_exists('rounds',$_SESSION)?$_SESSION['rounds']+1:12;
+	  $_SESSION['rounds']=array_key_exists('rounds',$_SESSION)?$_SESSION['rounds']+1:1;
 	  printf("rounds completed: %d",$_SESSION['rounds']);
 	}
       }
