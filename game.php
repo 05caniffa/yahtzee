@@ -171,22 +171,14 @@ function score_section($list){
     if($obj->id=="yahtzeebonus"){
       $enabled="disabled";
     }
-    if($_SESSION['turn_num']==3){
-	$enabled="";
-      }
-      if(!is_numeric($_SESSION['yahtzee'])){
-	$enabled="disabled";
-      }
-      else{
-	$si_arr=$gv->get_score_items();
-	$si=$si_arr["yahtzee"];
-	if(!$si->verify($dice))
-	  $enabled="disabled";
-      }
-    }
     if($first_check&&$enabled==""){
       $checked="checked";
       $first_check=false;
+    }
+    if($obj->id=="yahtzee"){
+      if(is_numeric($_SESSION[$obj->id])){
+	$_SESSION['has_yahtzee']=true;
+      }
     }
     printf("<tr><td>%s</td><td>%s</td><td><input type=\"radio\" name=\"selection\" value=\"%s\" %s %s></td></tr>",$obj->text,$_SESSION[$obj->id],$obj->id,$checked,$enabled);
     if(is_numeric($_SESSION[$obj->id])){
@@ -218,6 +210,7 @@ function roll(){
     else{
       //(re)roll that die
       $dice[$i]=rand(1,6);
+      $dice[$i]=5;
     }
   }
 }
@@ -237,6 +230,7 @@ function play_surface(){
 }
 
 function roll_form(){
+  global $dice,$gv;
   if($_SESSION['turn_num']>0){
     if($_SESSION['turn_num']<=3)
       roll();
@@ -247,6 +241,14 @@ function roll_form(){
     printf("<input type=\"hidden\" name=\"_roll\" value=\"true\">\n");
   }
   else{
+    if($_SESSION['has_yahtzee']){
+      $si_arr=$gv->get_score_items();
+      $si=$si_arr['yahtzee'];
+      if($si->verify($dice)){
+	printf("Yahtzee bonus! 100 points will automatically be added to the Yahtzee Bonus entry<br>");
+	$_SESSION['_bonus']=true;
+      }
+    }
     printf("<input type=\"submit\" value=\"Make Selection\">\n");
     printf("<input type=\"hidden\" name=\"_select\" value=\"true\">\n");
   }
@@ -296,6 +298,10 @@ else{
 	if($_SESSION['_valid']){
 	  $_SESSION['turn_num']=0;
 	  calc_score($_POST['selection']);
+	  if($_SESSION['_bonus']){
+	    calc_score('yahtzeebonus');
+	    $_SESSION['bonus']=false;
+	  }
 	  $_SESSION["_valid"]=false;
 	  $_SESSION['rounds']=array_key_exists('rounds',$_SESSION)?$_SESSION['rounds']+1:1;
 	  printf("rounds completed: %d",$_SESSION['rounds']);
